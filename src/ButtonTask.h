@@ -1,3 +1,5 @@
+#ifndef EEPROM_H
+#define EEPROM_H
 
 typedef enum
 {
@@ -8,3 +10,5 @@ typedef enum
 } BUTTON_STATE_ENUM ;
 
 void ButtonTask();
+
+#endif
