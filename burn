@@ -1,0 +1,3 @@
+#!/bin/bash
+stcgal -P stc15 -t6000  -olow_voltage_reset=False keyer.ihx
+
