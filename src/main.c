@@ -9,7 +9,7 @@
 void HwT0Int(void) __interrupt 1 ;	// SDCC requires interrupt prototypes in same file as main
 //Timer 1 ISR, Unit Timer - measures a dit unit
 void HwT1Int(void) __interrupt 3 ;	// SDCC requires interrupt prototypes in same file as main
-//Timer 2 ISR, (Heart) Beat Timer - 30ms
+//Timer 2 ISR, (Heart) Beat Timer - 10ms
 void HwT2Int(void) __interrupt 12;	// SDCC requires interrupt prototypes in same file as main
 
 void main()
