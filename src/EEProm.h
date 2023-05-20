@@ -14,6 +14,7 @@ BYTE IapReadByte(WORD addr);
 #define CMD_READ 1		//IAP Byte-Read
 #define CMD_PROGRAM 2	//IAP Byte-Program
 #define CMD_ERASE 3		//IAP Sector-Erase
+
 //#define ENABLE_IAP 0x80 //if SYSCLK<30MHz
 //#define ENABLE_IAP 0x81 //if SYSCLK<24MHz
 //#define ENABLE_IAP 0x82 //if SYSCLK<20MHz
@@ -24,11 +25,7 @@ BYTE IapReadByte(WORD addr);
 //#define ENABLE_IAP 0x87 //if SYSCLK<1MHz
 //Start address for STC15 series MCU EEPROM
 
-#define SETTINGS_ADDRESS	0x0400
-#define MACRO0_ADDRESS		0x0600
-#define MACRO1_ADDRESS		0x0800
-#define MACRO2_ADDRESS		0x0A00
-#define MACRO3_ADDRESS		0x0C00
+// end of datasheet~ish code
 
 void IapIdle();
 BYTE IapReadByte(WORD addr);
