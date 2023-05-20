@@ -4,7 +4,7 @@
 #include "NvSettings.h"
 #include "KeyTask.h"
 
-static unsigned char latchedKeys = 0;
+static unsigned char	latchedKeys = 0;
 
 static KEY_STATE_ENUM	keyState = KEY_STATE_IDLE;
 static unsigned char	unitTickCount = 0;
@@ -17,7 +17,7 @@ static OUT_MODE_ENUM 	keyOutMode ;
 static KEY_TYPE_ENUM	keyType ;
 
 static unsigned char 	charMask = 0;
-static unsigned char 			charCode = 0;
+static unsigned char	charCode = 0;
 
 #define MACRO_MEM_SIZE 30
 unsigned char	macroMem[MACRO_MEM_SIZE] = {
