@@ -5,12 +5,14 @@
 #include "ButtonTask.h"
 #include "LedTask.h"
 
+// SDCC requires interrupt prototypes in same file as main
+// Actual interrupt routines in HwAbstraction.c
 //Timer 0 ISR, Tone Timer 
-void HwT0Int(void) __interrupt 1 ;	// SDCC requires interrupt prototypes in same file as main
-//Timer 1 ISR, Unit Timer - measures a dit unit
-void HwT1Int(void) __interrupt 3 ;	// SDCC requires interrupt prototypes in same file as main
+void HwT0Int(void) __interrupt 1 ;	
+//Timer 1 ISR, Unit Timer - measures a dit unit = 1.2/wpm
+void HwT1Int(void) __interrupt 3 ;	
 //Timer 2 ISR, (Heart) Beat Timer - 10ms
-void HwT2Int(void) __interrupt 12;	// SDCC requires interrupt prototypes in same file as main
+void HwT2Int(void) __interrupt 12;	
 
 void main()
 {
