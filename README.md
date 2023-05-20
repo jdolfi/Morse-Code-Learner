@@ -19,7 +19,7 @@ U - Up - Increase setting ..
 
 R - Recall - setting name and sometimes value
 
-Long press of the Menu button brings you to keyer settings which themselves are annunciated in morse code.  The first setting to be annunciated is WPM.  Short press the menu button to scroll through other settings.  Long press the menu button again to exit settings mode and return to operate mode.  Operate mode is indicated by the break (=) _..._  Red UV led flashes in settings mode.
+Long press of the Menu button brings you to keyer settings which themselves are annunciated in morse code.  The first setting to be annunciated is WPM.  Short press the menu button to scroll through other settings.  Long press the menu button again to exit settings mode and return to operate mode.  Operate mode is indicated by the break (=) dah-dit-dit-dit-dah. Red UV led flashes in settings mode.
 
 WPM - keyer speed in wpm
 
