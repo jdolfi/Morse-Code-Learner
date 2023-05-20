@@ -7,6 +7,11 @@ static volatile unsigned char spkrOuts = 0;
 static unsigned char spkrMemory = 11;
 static unsigned char ledTimerCount=0;
 
+// Processor Oscillator runs at 6Mhz
+// This is divided by 2 for system clock at 3Mhz
+// Timers are all using 3MHZ/12 = 250Khz timebase
+// Timers counting up, interrupting at rollover
+
 //Timer 0 ISR, Tone Timer
 void HwT0Int(void) __interrupt 1
 {
