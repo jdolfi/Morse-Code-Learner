@@ -11,7 +11,6 @@ all: $(OBJECTS)
 	$(CC) $(LDFLAGS) $^ -o keyer.ihx
 
 clean:
-
 	rm -f keyer.*
 	rm -f obj/* 
 	rm -f src/*.gch
