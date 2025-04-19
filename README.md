@@ -33,9 +33,11 @@ SPKR - Speaker volume 1,2
 
 EAR - Ear volume 1,2,3
 
+RPLY - Replay interval 0 is dont replay and then 2 second intervals from 2 to 20
+
 In operating mode, when idle, the leds indicate the output mode.  No leds means out mode off.
 While keying the HF led will code in red in HF mode, green otherwise.  The UV led will be solid red while PTT active.
 
-In operating mode the D, U, R keys are memory keyers.  To record a message in each memory, long push corresponding button until UV flashes red.  Then record with paddle keyer.  Promptly short or long press the button when finished to finish recording.  A short press of the D,U,R buttons will play back the corresponding recorded message.
+In operating mode the D, U, R keys are memory keyers.  To record a message in each memory, long push corresponding button until UV flashes red.  Then record with paddle keyer.  Promptly short or long press the button when finished to finish recording.  A short press of the D,U,R buttons will play back the corresponding recorded message.  The HF led flashes green when in repeat mode.
 
 There is no power down function implemented for now.  Just unplug it :)
