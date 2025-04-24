@@ -1,7 +1,7 @@
 #include "stc15_1.h"
 #include "EEProm.h"
 #include "NvSettings.h"
-#include "KeyTask.h"
+#include "MacroRecord.h"
 
 // much straight from the datasheet
 

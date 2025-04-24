@@ -1,9 +1,11 @@
 #include "HwAbstraction.h"
 #include "KeyTask.h"
 #include "ModeTask.h"
-#include "SpellTask.h"
 #include "ButtonTask.h"
 #include "LedTask.h"
+#include "CharTask.h"
+#include "PlayTask.h"
+#include "OutControl.h"
 
 // SDCC requires interrupt prototypes in same file as main
 // Actual interrupt routines in HwAbstraction.c
@@ -18,15 +20,19 @@ void main()
 {
 	HwInit();
 	HwGlobalIntEnable();
-		
+
 	while (1)
 	{
 		HwSpkrMgr();
+		HwLatchKeys();
 		KeyTask();
 		LedTask();
+		HwLatchKeys();
 		ButtonTask();
 		ModeTask();
-		SpellTask();
+		CharTask();
+		PlayTask();
+		OutTimer();
 	}
 	
 }

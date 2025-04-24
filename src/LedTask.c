@@ -27,10 +27,10 @@ void uvLed(LED_COLOR_ENUM color1, LED_COLOR_ENUM color2)
 
 void LedTask()
 {
-	if (!SignalIsSet(SIGNAL_LED_TICK))
+	if (!signalLedTick)
 		return;
 		
-	ClearSignal(SIGNAL_LED_TICK);
+	CBIT(signalLedTick);
 	
 	switch (ledState)
 	{

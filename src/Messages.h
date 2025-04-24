@@ -10,6 +10,7 @@ extern const unsigned char keyMsg[];
 extern const unsigned char outMsg[];
 extern const unsigned char spkrMsg[];
 extern const unsigned char earMsg[];
+extern const unsigned char replayMsg[];
 
 extern const unsigned char eMsg[];
 extern const unsigned char iMsg[];

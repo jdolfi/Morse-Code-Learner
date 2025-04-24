@@ -8,6 +8,7 @@ unsigned short nvSettings[NV_SIZE] =
 	OUT_MODE_UV,		// NV_OUT_MODE	
 	0x10,				// NV_SPKR_VOL
 	7,					// NV_EAR_VOL
+	5,					// NV_REPLAY
 } ;
 
 const RANGE_STRUCT nvRanges[NV_SIZE] =
@@ -16,8 +17,9 @@ const RANGE_STRUCT nvRanges[NV_SIZE] =
 	{500,1000,25},		// NV_TONE
 	{0,2,1},			// NV_KEY_TYPE
 	{0,2,1},			// NV_OUT_MODE	
-	{0x10,0x20,0x10},	// NV_SPKR_VOL
+	{0x00,0x20,0x10},	// NV_SPKR_VOL
 	{1,7,1},			// NV_EAR_VOL 
+	{0,10,1},			// NV_REPLAY
 } ;
 
 unsigned short calcToneTimerValue(unsigned short freq)

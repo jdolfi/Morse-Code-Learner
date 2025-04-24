@@ -27,6 +27,12 @@ BYTE IapReadByte(WORD addr);
 
 // end of datasheet~ish code
 
+#define SETTINGS_ADDRESS	0x0400
+#define MACRO0_ADDRESS		0x0600
+#define MACRO1_ADDRESS		0x0800
+#define MACRO2_ADDRESS		0x0A00
+#define MACRO3_ADDRESS		0x0C00
+
 void IapIdle();
 BYTE IapReadByte(WORD addr);
 void IapProgramByte(WORD addr, BYTE dat);

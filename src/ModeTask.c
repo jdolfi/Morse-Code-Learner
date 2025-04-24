@@ -1,23 +1,33 @@
 #include "HwAbstraction.h"
 #include "Signals.h"
 #include "ModeTask.h"
+#include "LedTask.h"
 #include "NvSettings.h"
 #include "KeyTask.h"
-#include "SpellTask.h"
+#include "OutControl.h"
+#include "CharTask.h"
 #include "Messages.h"
 #include "EEProm.h"
+#include "MacroRecord.h"
+#include "PlayTask.h"
 
 static OP_STATE_ENUM opState = MODE_STATE_STARTUP ;
 
-unsigned char checkSignal(_SIGNALS_ENUM pressId)
+unsigned char SignalCheck(unsigned char* theSignal)
 {
-	if (SignalIsSet(pressId))
+	if (*theSignal)
 	{
-		ClearSignal(pressId);
+		CBIT(*theSignal);
 		return 1 ;
 	}	
 	
 	return 0;
+}
+
+void ModeTaskEnableSettings()
+{	
+	uvLed(LED_GREEN, LED_OFF);
+	OutInitialize(OUT_MODE_OFF);
 }
 
 unsigned char adjustSetting(unsigned char settingId)
@@ -25,33 +35,33 @@ unsigned char adjustSetting(unsigned char settingId)
 	unsigned short newSetting;
 	unsigned char wasAdjusted = 0;
 	
-	if ( checkSignal(SIGNAL_PB1_SHORT) )
+	if ( SignalCheck(&signalPB1Short) )
 	{
-		ConfigureKeyForMessages();
+		CharTaskEnable();
 		wasAdjusted = 0x01;
 		newSetting = nvSettings[settingId] - nvRanges[settingId].step ;		
 		if ( (newSetting >= nvRanges[settingId].low) && (newSetting <= nvRanges[settingId].high) )
 		{
 			nvSettings[settingId] = newSetting ;		
-			SetSpellMsg(eMsg) ;
+			CharTaskSetMsg(eMsg) ;
 		}
 		else
-			SetSpellMsg(ttMsg) ;
+			CharTaskSetMsg(ttMsg) ;
 	}
 
-	if ( checkSignal(SIGNAL_PB2_SHORT) )
+	if ( SignalCheck(&signalPB2Short) )
 	{
-		ConfigureKeyForMessages();
+		CharTaskEnable();
 		wasAdjusted = 0x01;
 		newSetting = nvSettings[settingId] + nvRanges[settingId].step ;		
 		if ( (newSetting >= nvRanges[settingId].low) && (newSetting <= nvRanges[settingId].high) )
 		{
 			nvSettings[settingId] = newSetting ;				
-			SetSpellMsg(iMsg) ;
+			CharTaskSetMsg(iMsg) ;
 			
 		}
 		else
-			SetSpellMsg(ttMsg) ;		
+			CharTaskSetMsg(ttMsg) ;		
 	}
 	
 	return wasAdjusted ;
@@ -76,136 +86,147 @@ void ModeTask()
 		
 		case MODE_STATE_EXIT_SETTINGS:
 			opState = MODE_STATE_OPERATE_MSG;
-			StoreNvSettingsToEeprom();
+			StoreNvSettingsToEeprom();			
 		break ;
 		
 		case MODE_STATE_OPERATE_MSG:
+			SetSpeakerVolume(nvSettings[NV_SPKR_VOL]);
 			opState = MODE_STATE_OPERATE_MAIN_WAIT;
-			ConfigureKeyForMessages();			
-			SetSpellMsg(operateMsg) ;			
+			CharTaskEnable();			
+			CharTaskSetMsg(operateMsg) ;			
 		break;
 		
 		case MODE_STATE_OPERATE_MAIN_WAIT:
-			if ( SignalIsSet(SIGNAL_MSG_END) )
+			if ( signalMsgEnd )
 			{
-				ClearSignal(SIGNAL_MSG_END);
+				CBIT(signalMsgEnd);
 				opState = MODE_STATE_OPERATE_MAIN;
-				ConfigureKeyForOperate();
+				OutInitialize(nvSettings[NV_OUT_MODE]);
+				KeyTaskEnable();
 			}
 		break;
 		
 		case MODE_STATE_OPERATE_MAIN:
-			//if (checkSignal(SIGNAL_PB0_SHORT))
+			//if (SignalCheck(&signalPB0Short))
 			
-			if (checkSignal(SIGNAL_PB0_LONG))
+			if (SignalCheck(&signalPB0Long))
+			{
 				opState = MODE_STATE_WPM_MSG ;
+				SetSpeakerVolume(TONE_OUT_SPKR1);
+			}
 				
-			else if (checkSignal(SIGNAL_PB1_SHORT))
+			else if (SignalCheck(&signalPB1Short))
 			{
 				LoadNvMacroFromEeprom(1);
-				ConfigureKeyForMacro();	
+				PlayTaskEnable();	
 			}
-			else if (checkSignal(SIGNAL_PB1_LONG))
+			else if (SignalCheck(&signalPB1Long))
 			{
-				ConfigureKeyForSettings();
-				StartMacroRecord();
+				SetSpeakerVolume(TONE_OUT_SPKR1);
+				ModeTaskEnableSettings();
+				MacroRecordStart();
 				opState = MODE_STATE_MACRO_STORE1 ;
 			}
 			
-			else if (checkSignal(SIGNAL_PB2_SHORT))
+			else if (SignalCheck(&signalPB2Short))
 			{
 				LoadNvMacroFromEeprom(2);
-				ConfigureKeyForMacro();	
+				PlayTaskEnable();	
 			}
-			else if (checkSignal(SIGNAL_PB2_LONG))
+			else if (SignalCheck(&signalPB2Long))
 			{
-				ConfigureKeyForSettings();
-				StartMacroRecord();
+				SetSpeakerVolume(TONE_OUT_SPKR1);
+				ModeTaskEnableSettings();
+				MacroRecordStart();
 				opState = MODE_STATE_MACRO_STORE2 ;
 			}
 
-			else if (checkSignal(SIGNAL_PB3_SHORT))
+			else if (SignalCheck(&signalPB3Short))
 			{
 				LoadNvMacroFromEeprom(3);
-				ConfigureKeyForMacro();	
+				PlayTaskEnable();	
 			}
-			else if (checkSignal(SIGNAL_PB3_LONG))
+			else if (SignalCheck(&signalPB3Long))
 			{
-				ConfigureKeyForSettings();
-				StartMacroRecord();
+				SetSpeakerVolume(TONE_OUT_SPKR1);
+				ModeTaskEnableSettings();
+				MacroRecordStart();
 				opState = MODE_STATE_MACRO_STORE3 ;
 			}
 		break ;
 
 		case MODE_STATE_MACRO_STORE1:
-			if ( checkSignal(SIGNAL_PB1_SHORT) || checkSignal(SIGNAL_PB1_LONG) )
+			if ( SignalCheck(&signalPB1Short) || SignalCheck(&signalPB1Long) )
 			{
 				opState = MODE_STATE_OPERATE_MSG;
-				StopMacroRecord();
+				MacroRecordStop();
 				StoreNvMacroToEeprom(1);
 			}
 		break ;
 
 		case MODE_STATE_MACRO_STORE2:
-			if ( checkSignal(SIGNAL_PB2_SHORT) || checkSignal(SIGNAL_PB2_LONG) )
+			if ( SignalCheck(&signalPB2Short) || SignalCheck(&signalPB2Long) )
 			{
 				opState = MODE_STATE_OPERATE_MSG;
-				StopMacroRecord();
+				MacroRecordStop();
 				StoreNvMacroToEeprom(2);
 			}
 		break ;
 
 		case MODE_STATE_MACRO_STORE3:
-			if ( checkSignal(SIGNAL_PB3_SHORT) || checkSignal(SIGNAL_PB3_LONG) )
+			if ( SignalCheck(&signalPB3Short) || SignalCheck(&signalPB3Long) )
 			{
 				opState = MODE_STATE_OPERATE_MSG;
-				StopMacroRecord();
+				MacroRecordStop();
 				StoreNvMacroToEeprom(3);
 			}
 		break ;
 		
 		case MODE_STATE_WPM_MSG:
 			opState = MODE_STATE_WPM_MAIN_WAIT;
-			ConfigureKeyForMessages();					
-			SetSpellMsg(wpmMsg) ;		
+			CharTaskEnable();					
+			CharTaskSetMsg(wpmMsg) ;		
 		break ;
 
 		case MODE_STATE_WPM_MAIN_WAIT:
-			if ( SignalIsSet(SIGNAL_MSG_END) )
+			if ( signalMsgEnd )
 			{
-				ClearSignal(SIGNAL_MSG_END);
+				CBIT(signalMsgEnd);
 				opState = MODE_STATE_WPM_MAIN;
-				ConfigureKeyForSettings();				
+				ModeTaskEnableSettings();
 			}
 		break ;
 		
 		case MODE_STATE_WPM_MAIN:
 			if ( adjustSetting(NV_WPM) )
+			{
+				KeyTaskEnable();
 				opState = MODE_STATE_WPM_MAIN_WAIT;
+			}
 
-			if (checkSignal(SIGNAL_PB0_SHORT))
+			if (SignalCheck(&signalPB0Short))
 				opState = MODE_STATE_TONE_MSG ;
 
-			if (checkSignal(SIGNAL_PB0_LONG))
+			if (SignalCheck(&signalPB0Long))
 				opState = MODE_STATE_EXIT_SETTINGS ;
 				
-			if (checkSignal(SIGNAL_PB3_SHORT))
+			if (SignalCheck(&signalPB3Short))
 				opState = MODE_STATE_WPM_MSG;
 		break ;		
 		
 		case MODE_STATE_TONE_MSG:
 			opState = MODE_STATE_TONE_MAIN_WAIT;
-			ConfigureKeyForMessages();
-			SetSpellMsg(toneMsg) ;		
+			CharTaskEnable();
+			CharTaskSetMsg(toneMsg) ;		
 			
 		break ;
 
 		case MODE_STATE_TONE_MAIN_WAIT:
-			if ( SignalIsSet(SIGNAL_MSG_END) )
+			if ( signalMsgEnd )
 			{
-				ClearSignal(SIGNAL_MSG_END);
+				CBIT(signalMsgEnd);
 				opState = MODE_STATE_TONE_MAIN;
-				ConfigureKeyForSettings();
+				ModeTaskEnableSettings();
 			}
 		break ;
 		
@@ -213,53 +234,53 @@ void ModeTask()
 			if ( adjustSetting(NV_TONE) )
 				opState = MODE_STATE_TONE_MAIN_WAIT;
 
-			if (checkSignal(SIGNAL_PB0_SHORT))
+			if (SignalCheck(&signalPB0Short))
 				opState = MODE_STATE_KEY_MSG ;
 
-			if (checkSignal(SIGNAL_PB0_LONG))
+			if (SignalCheck(&signalPB0Long))
 				opState = MODE_STATE_EXIT_SETTINGS ;
 				
-			if (checkSignal(SIGNAL_PB3_SHORT))
+			if (SignalCheck(&signalPB3Short))
 				opState = MODE_STATE_TONE_MSG;
 		break ;		
 		
 		case MODE_STATE_KEY_MSG:
 			opState = MODE_STATE_KEY_MAIN_WAIT;
-			ConfigureKeyForMessages();
-			SetSpellMsg(keyMsg) ;		
+			CharTaskEnable();
+			CharTaskSetMsg(keyMsg) ;		
 			
 		break ;
 		
 		case MODE_STATE_KEY_VAL_MSG:
-			if ( SignalIsSet(SIGNAL_MSG_END) )
+			if ( signalMsgEnd )
 			{
-				ClearSignal(SIGNAL_MSG_END);
+				CBIT(signalMsgEnd);
 		
 				opState = MODE_STATE_KEY_MAIN_WAIT;
-				ConfigureKeyForMessages();
+				CharTaskEnable();
 				switch (nvSettings[NV_KEY_TYPE])
 				{
 					case IAMBIC_A_KEY:
-						SetSpellMsg(&keyIambicAMsg[3]) ;
+						CharTaskSetMsg(&keyIambicAMsg[3]) ;
 					break ;
 					
 					case IAMBIC_B_KEY:
-						SetSpellMsg(&keyIambicBMsg[3]) ;
+						CharTaskSetMsg(&keyIambicBMsg[3]) ;
 					break ;
 					
 					default:
-						SetSpellMsg(&keyStraightMsg[3]) ;
+						CharTaskSetMsg(&keyStraightMsg[3]) ;
 					break ;
 				}		
 			}
 		break ;
 
 		case MODE_STATE_KEY_MAIN_WAIT:
-			if ( SignalIsSet(SIGNAL_MSG_END) )
+			if ( signalMsgEnd )
 			{
-				ClearSignal(SIGNAL_MSG_END);
+				CBIT(signalMsgEnd);
 				opState = MODE_STATE_KEY_MAIN;
-				ConfigureKeyForSettings();
+				ModeTaskEnableSettings();
 			}
 		break ;
 		
@@ -267,28 +288,28 @@ void ModeTask()
 			if ( adjustSetting(NV_KEY_TYPE) )
 				opState = MODE_STATE_KEY_VAL_MSG;
 
-			if (checkSignal(SIGNAL_PB0_SHORT))
+			if (SignalCheck(&signalPB0Short))
 				opState = MODE_STATE_OUT_MSG ;
 
-			if (checkSignal(SIGNAL_PB0_LONG))
+			if (SignalCheck(&signalPB0Long))
 				opState = MODE_STATE_EXIT_SETTINGS ;
 				
-			if (checkSignal(SIGNAL_PB3_SHORT))
+			if (SignalCheck(&signalPB3Short))
 			{				
 				opState = MODE_STATE_KEY_MAIN_WAIT;
-				ConfigureKeyForMessages();
+				CharTaskEnable();
 				switch (nvSettings[NV_KEY_TYPE])
 				{
 					case IAMBIC_A_KEY:
-						SetSpellMsg(keyIambicAMsg) ;
+						CharTaskSetMsg(keyIambicAMsg) ;
 					break ;
 					
 					case IAMBIC_B_KEY:
-						SetSpellMsg(keyIambicBMsg) ;
+						CharTaskSetMsg(keyIambicBMsg) ;
 					break ;
 					
 					default:
-						SetSpellMsg(keyStraightMsg) ;
+						CharTaskSetMsg(keyStraightMsg) ;
 					break ;
 				}
 			}
@@ -296,41 +317,41 @@ void ModeTask()
 
 		case MODE_STATE_OUT_MSG:
 			opState = MODE_STATE_OUT_MAIN_WAIT;
-			ConfigureKeyForMessages();
-			SetSpellMsg(outMsg) ;		
+			CharTaskEnable();
+			CharTaskSetMsg(outMsg) ;		
 			
 		break ;
 		
 		case MODE_STATE_OUT_VAL_MSG:
-			if ( SignalIsSet(SIGNAL_MSG_END) )
+			if ( signalMsgEnd )
 			{
-				ClearSignal(SIGNAL_MSG_END);
+				CBIT(signalMsgEnd);
 		
 				opState = MODE_STATE_OUT_MAIN_WAIT;
-				ConfigureKeyForMessages();
+				CharTaskEnable();
 				switch (nvSettings[NV_OUT_MODE])
 				{
 					case OUT_MODE_HF:
-						SetSpellMsg(&outHfMsg[3]) ;
+						CharTaskSetMsg(&outHfMsg[3]) ;
 					break ;
 					
 					case OUT_MODE_UV:
-						SetSpellMsg(&outUvMsg[3]) ;
+						CharTaskSetMsg(&outUvMsg[3]) ;
 					break ;
 					
 					default:
-						SetSpellMsg(&outOffMsg[3]) ;
+						CharTaskSetMsg(&outOffMsg[3]) ;
 					break ;
 				}		
 			}
 		break ;
 
 		case MODE_STATE_OUT_MAIN_WAIT:
-			if ( SignalIsSet(SIGNAL_MSG_END) )
+			if ( signalMsgEnd )
 			{
-				ClearSignal(SIGNAL_MSG_END);
+				CBIT(signalMsgEnd);
 				opState = MODE_STATE_OUT_MAIN;
-				ConfigureKeyForSettings();
+				ModeTaskEnableSettings();
 			}
 		break ;
 		
@@ -338,28 +359,28 @@ void ModeTask()
 			if ( adjustSetting(NV_OUT_MODE) )
 				opState = MODE_STATE_OUT_VAL_MSG;
 
-			if (checkSignal(SIGNAL_PB0_SHORT))
+			if (SignalCheck(&signalPB0Short))
 				opState = MODE_STATE_SPKR_MSG ;
 
-			if (checkSignal(SIGNAL_PB0_LONG))
+			if (SignalCheck(&signalPB0Long))
 				opState = MODE_STATE_EXIT_SETTINGS ;
 				
-			if (checkSignal(SIGNAL_PB3_SHORT))
+			if (SignalCheck(&signalPB3Short))
 			{				
 				opState = MODE_STATE_OUT_MAIN_WAIT;
-				ConfigureKeyForMessages();
+				CharTaskEnable();
 				switch (nvSettings[NV_OUT_MODE])
 				{
 					case OUT_MODE_HF:
-						SetSpellMsg(outHfMsg) ;
+						CharTaskSetMsg(outHfMsg) ;
 					break ;
 					
 					case OUT_MODE_UV:
-						SetSpellMsg(outUvMsg) ;
+						CharTaskSetMsg(outUvMsg) ;
 					break ;
 					
 					default:
-						SetSpellMsg(outOffMsg) ;
+						CharTaskSetMsg(outOffMsg) ;
 					break ;
 				}
 			}
@@ -367,17 +388,17 @@ void ModeTask()
 
 		case MODE_STATE_SPKR_MSG:
 			opState = MODE_STATE_SPKR_MAIN_WAIT;
-			ConfigureKeyForMessages();
-			SetSpellMsg(spkrMsg) ;		
+			CharTaskEnable();
+			CharTaskSetMsg(spkrMsg) ;		
 			
 		break ;
 
 		case MODE_STATE_SPKR_MAIN_WAIT:
-			if ( SignalIsSet(SIGNAL_MSG_END) )
+			if ( signalMsgEnd )
 			{
-				ClearSignal(SIGNAL_MSG_END);
+				CBIT(signalMsgEnd);
 				opState = MODE_STATE_SPKR_MAIN;
-				ConfigureKeyForSettings();
+				ModeTaskEnableSettings();
 			}
 		break ;
 		
@@ -385,29 +406,29 @@ void ModeTask()
 			if ( adjustSetting(NV_SPKR_VOL) )
 				opState = MODE_STATE_SPKR_MAIN_WAIT;
 
-			if (checkSignal(SIGNAL_PB0_SHORT))
+			if (SignalCheck(&signalPB0Short))
 				opState = MODE_STATE_EAR_MSG ;
 
-			if (checkSignal(SIGNAL_PB0_LONG))
+			if (SignalCheck(&signalPB0Long))
 				opState = MODE_STATE_EXIT_SETTINGS ;
 				
-			if (checkSignal(SIGNAL_PB3_SHORT))
+			if (SignalCheck(&signalPB3Short))
 				opState = MODE_STATE_SPKR_MSG;
 		break ;		
 
 		case MODE_STATE_EAR_MSG:
 			opState = MODE_STATE_EAR_MAIN_WAIT;
-			ConfigureKeyForMessages();
-			SetSpellMsg(earMsg) ;		
+			CharTaskEnable();
+			CharTaskSetMsg(earMsg) ;		
 			
 		break ;
 
 		case MODE_STATE_EAR_MAIN_WAIT:
-			if ( SignalIsSet(SIGNAL_MSG_END) )
+			if ( signalMsgEnd )
 			{
-				ClearSignal(SIGNAL_MSG_END);
+				CBIT(signalMsgEnd);
 				opState = MODE_STATE_EAR_MAIN;
-				ConfigureKeyForSettings();
+				ModeTaskEnableSettings();
 			}
 		break ;
 		
@@ -415,14 +436,44 @@ void ModeTask()
 			if ( adjustSetting(NV_EAR_VOL) )
 				opState = MODE_STATE_EAR_MAIN_WAIT;
 
-			if (checkSignal(SIGNAL_PB0_SHORT))
-				opState = MODE_STATE_WPM_MSG ;
+			if (SignalCheck(&signalPB0Short))
+				opState = MODE_STATE_REPLAY_MSG ;
 
-			if (checkSignal(SIGNAL_PB0_LONG))
+			if (SignalCheck(&signalPB0Long))
 				opState = MODE_STATE_EXIT_SETTINGS ;
 				
-			if (checkSignal(SIGNAL_PB3_SHORT))
+			if (SignalCheck(&signalPB3Short))
 				opState = MODE_STATE_EAR_MSG;
+		break ;	
+
+		case MODE_STATE_REPLAY_MSG:
+			opState = MODE_STATE_REPLAY_MAIN_WAIT;
+			CharTaskEnable();
+			CharTaskSetMsg(replayMsg) ;		
+			
+		break ;
+
+		case MODE_STATE_REPLAY_MAIN_WAIT:
+			if ( signalMsgEnd )
+			{
+				CBIT(signalMsgEnd);
+				opState = MODE_STATE_REPLAY_MAIN;
+				ModeTaskEnableSettings();
+			}
+		break ;
+		
+		case MODE_STATE_REPLAY_MAIN:
+			if ( adjustSetting(NV_REPLAY) )
+				opState = MODE_STATE_REPLAY_MAIN_WAIT;
+
+			if (SignalCheck(&signalPB0Short))
+				opState = MODE_STATE_WPM_MSG ;
+
+			if (SignalCheck(&signalPB0Long))
+				opState = MODE_STATE_EXIT_SETTINGS ;
+				
+			if (SignalCheck(&signalPB3Short))
+				opState = MODE_STATE_REPLAY_MSG;
 		break ;	
 							
 	}

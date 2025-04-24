@@ -160,3 +160,10 @@ const unsigned char earMsg[] =
 	MSG_END
 };
 
+const unsigned char replayMsg[] =
+{
+	CHAR_R,	
+	CHAR_P,
+	CHAR_Y,
+	MSG_END
+};

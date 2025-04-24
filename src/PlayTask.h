@@ -1,0 +1,24 @@
+#ifndef PLAY_TASK_H
+#define PLAY_TASK_H
+
+typedef enum
+{
+	PLAY_STATE_DISABLE		=0x00,
+	PLAY_STATE_IDLE			=0x01,
+	PLAY_STATE_ABORT		=0x02,
+	PLAY_STATE_PLAY			=0x03,
+	PLAY_STATE_WAIT			=0x04,
+	PLAY_STATE_DIT			=0x05,
+	PLAY_STATE_DAH			=0x06,
+	PLAY_STATE_DXX_GAP		=0x07,
+	PLAY_STATE_LETTER_GAP	=0x08,
+	PLAY_STATE_WORD_GAP		=0x09
+	
+} PLAY_STATE_ENUM;
+
+void PlayTask();
+void PlayTaskEnable();
+void PlayTaskDisable();
+
+
+#endif

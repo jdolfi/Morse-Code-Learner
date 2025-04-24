@@ -1,4 +1,5 @@
 
+#define CHAR_NULL 0x00
 #define CHAR_SPACE (0b00000100)
 #define CHAR_A (0b11111001)
 #define CHAR_B (0b11101000)

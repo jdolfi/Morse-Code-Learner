@@ -2,8 +2,6 @@
 #include "Signals.h"
 #include "ButtonTask.h"
 
-static unsigned char pressed;
-
 static unsigned char but0Count = 0;
 static BUTTON_STATE_ENUM but0State = BUT_STATE_IDLE;
 static unsigned char but1Count = 0;
@@ -13,12 +11,49 @@ static BUTTON_STATE_ENUM but2State = BUT_STATE_IDLE;
 static unsigned char but3Count = 0;
 static BUTTON_STATE_ENUM but3State = BUT_STATE_IDLE;
 
+static unsigned char buttonsEnabled=1;
+
+void ButtonsEnable()
+{
+	but0State=BUT_STATE_IDLE;
+	but0Count=0;
+	CBIT(signalPB0Short);
+	CBIT(signalPB0Long);
+	
+	but1State=BUT_STATE_IDLE;
+	but1Count=0;
+	CBIT(signalPB1Short);
+	CBIT(signalPB1Long);
+	
+	but2State=BUT_STATE_IDLE;
+	but2Count=0;
+	CBIT(signalPB2Short);
+	CBIT(signalPB2Long);
+	
+	but3State=BUT_STATE_IDLE;
+	but3Count=0;
+	CBIT(signalPB3Short);
+	CBIT(signalPB3Long);
+	
+	buttonsEnabled=1;
+}
+
+void ButtonsDisable()
+{
+	buttonsEnabled=0;
+}
+
 void Button0Task()
 {	
+	if (!buttonsEnabled)
+	{
+		return ;		
+	}
+	
 	switch (but0State)
 	{
 		case BUT_STATE_IDLE:
-			if (pressed & 0x01)
+			if ( HwPB0Pressed() )
 			{
 				but0State = BUT_STATE_DOWN ;
 				but0Count=1;
@@ -26,20 +61,20 @@ void Button0Task()
 		break ;
 		
 		case BUT_STATE_DOWN:
-			if (pressed & 0x01)
+			if ( HwPB0Pressed() )
 			{					
 				if (but0Count < 100)
 					but0Count++;
 				else if (but0Count == 100)
 				{
-					SetSignal(SIGNAL_PB0_LONG);
+					SBIT(signalPB0Long);
 					but0Count++;
 				}
 			}
 			else
 			{
 				if (but0Count < 100)
-					SetSignal(SIGNAL_PB0_SHORT);					
+					SBIT(signalPB0Short);					
 				but0Count = 0;
 				but0State = BUT_STATE_RELEASE ;
 			}
@@ -62,7 +97,7 @@ void Button1Task()
 	switch (but1State)
 	{
 		case BUT_STATE_IDLE:
-			if (pressed & 0x02)
+			if ( HwPB1Pressed() )
 			{
 				but1State = BUT_STATE_DOWN ;
 				but1Count=1;
@@ -70,20 +105,20 @@ void Button1Task()
 		break ;
 		
 		case BUT_STATE_DOWN:
-			if (pressed & 0x02)
+			if ( HwPB1Pressed() )
 			{					
 				if (but1Count < 100)
 					but1Count++;
 				else if (but1Count == 100)
 				{
-					SetSignal(SIGNAL_PB1_LONG);
+					SBIT(signalPB1Long);
 					but1Count++;
 				}
 			}
 			else
 			{
 				if (but1Count < 100)
-					SetSignal(SIGNAL_PB1_SHORT);					
+					SBIT(signalPB1Short);					
 				but1Count = 0;
 				but1State = BUT_STATE_RELEASE ;
 			}
@@ -107,7 +142,7 @@ void Button2Task()
 	switch (but2State)
 	{
 		case BUT_STATE_IDLE:
-			if (pressed & 0x04)
+			if ( HwPB2Pressed() )
 			{
 				but2State = BUT_STATE_DOWN ;
 				but2Count=1;
@@ -115,20 +150,20 @@ void Button2Task()
 		break ;
 		
 		case BUT_STATE_DOWN:
-			if (pressed & 0x04)
+			if ( HwPB2Pressed() )
 			{					
 				if (but2Count < 100)
 					but2Count++;
 				else if (but2Count == 100)
 				{
-					SetSignal(SIGNAL_PB2_LONG);
+					SBIT(signalPB2Long);
 					but2Count++;
 				}
 			}
 			else
 			{
 				if (but2Count < 100)
-					SetSignal(SIGNAL_PB2_SHORT);					
+					SBIT(signalPB2Short);					
 				but2Count = 0;
 				but2State = BUT_STATE_RELEASE ;
 			}
@@ -150,7 +185,7 @@ void Button3Task()
 	switch (but3State)
 	{
 		case BUT_STATE_IDLE:
-			if (pressed & 0x08)
+			if ( HwPB3Pressed() )
 			{
 				but3State = BUT_STATE_DOWN ;
 				but3Count=1;
@@ -158,20 +193,20 @@ void Button3Task()
 		break ;
 		
 		case BUT_STATE_DOWN:
-			if (pressed & 0x08)
+			if ( HwPB3Pressed() )
 			{					
 				if (but3Count < 100)
 					but3Count++;
 				else if (but3Count == 100)
 				{
-					SetSignal(SIGNAL_PB3_LONG);
+					SBIT(signalPB3Long);
 					but3Count++;
 				}
 			}
 			else
 			{
 				if (but3Count < 100)
-					SetSignal(SIGNAL_PB3_SHORT);					
+					SBIT(signalPB3Short);					
 				but3Count = 0;
 				but3State = BUT_STATE_RELEASE ;
 			}
@@ -191,12 +226,11 @@ void Button3Task()
 
 void ButtonTask()
 {
-	if (!SignalIsSet(SIGNAL_BUTTON_TICK))
+	if (!signalButtonTick)
 		return ;
 		
-	ClearSignal(SIGNAL_BUTTON_TICK);
-	
-	pressed = HwButtonsPressed();
+	CBIT(signalButtonTick);
+
 	Button0Task();
 	Button1Task();
 	Button2Task();

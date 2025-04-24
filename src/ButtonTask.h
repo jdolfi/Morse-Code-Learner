@@ -10,5 +10,7 @@ typedef enum
 } BUTTON_STATE_ENUM ;
 
 void ButtonTask();
+void ButtonsEnable();
+void ButtonsDisable();
 
 #endif

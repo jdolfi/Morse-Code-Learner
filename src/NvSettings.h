@@ -26,7 +26,8 @@ typedef enum
 	NV_OUT_MODE	= 0x03,	
 	NV_SPKR_VOL	= 0x04,
 	NV_EAR_VOL	= 0x05,
-	NV_SIZE		= 0x06,
+	NV_REPLAY	= 0x06,
+	NV_SIZE		= 0x07,
 	
 }	NV_SETTINGS_ENUM ;
 

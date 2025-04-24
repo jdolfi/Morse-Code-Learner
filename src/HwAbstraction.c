@@ -6,6 +6,8 @@
 static volatile unsigned char spkrOuts = 0;
 static unsigned char spkrMemory = 11;
 static unsigned char ledTimerCount=0;
+static unsigned char replayTimerCount=0;
+static unsigned char speakerVolume=0;
 
 // Processor Oscillator runs at 6Mhz
 // This is divided by 2 for system clock at 3Mhz
@@ -26,36 +28,34 @@ void HwT0Int(void) __interrupt 1
 //Timer 1 ISR, Unit Timer - measures a dit unit
 void HwT1Int(void) __interrupt 3
 {
-	SetSignal(SIGNAL_UNIT_TICK);
+	SBIT(keyUnitTick);
+	SBIT(charUnitTick);
+	SBIT(playUnitTick);
 }
 
 //Timer 2 ISR, (Heart) Beat Timer - 10ms
 void HwT2Int(void) __interrupt 12
 {
-	SetSignal(SIGNAL_BUTTON_TICK);
-	SetSignal(SIGNAL_KEY_TICK);
+	SBIT(signalButtonTick);
+	SBIT(signalOutTick);
 	
 	ledTimerCount++;
-	if (ledTimerCount > 30)
+	if (ledTimerCount > 30)	// 300ms
 	{
 		ledTimerCount=0;
-		SetSignal(SIGNAL_LED_TICK);
+		SBIT(signalLedTick);
 	}
-}
-
-unsigned char HwKeysPressed()
-{
-	unsigned char pressed = 0;
 	
-	if (!P2_5)
-	  pressed |= DAH_PRESSED ;
-	if (!P2_6)
-	  pressed |= DIT_PRESSED ;
-	  
-	return pressed ;
+	replayTimerCount++;
+	if (replayTimerCount > 25)	// 250ms
+	{
+		replayTimerCount=0;
+		SBIT(signalReplayTick);
+	}
+	
 }
 
-void HwStartToneTimer(unsigned short timerValue)
+void HwSideToneOn(unsigned short timerValue)
 {
 	
 	TH0 = timerValue >> 8 ;			
@@ -64,7 +64,7 @@ void HwStartToneTimer(unsigned short timerValue)
 	ET0 = 1;
 }
 
-void HwStopToneTimer()
+void HwSideToneOff()
 {
 	TR0 = 0;
 	ET0 = 0;
@@ -186,6 +186,11 @@ void HwKeyerOut(unsigned char keyerOn)
 		P1_1 = 0;
 }
 
+void SetSpeakerVolume(char pVol)
+{
+	speakerVolume = pVol ;
+}
+
 void HwSpkrMgr()
 {		
 	if (P3_4 == spkrMemory)
@@ -196,7 +201,7 @@ void HwSpkrMgr()
 	// P3_4 goes low on plugin of headphone
 	if (P3_4)
 	{		
-		spkrOuts = nvSettings[NV_SPKR_VOL];
+		spkrOuts = speakerVolume ;
 		
 		P1M0 = 0x00;
 		if (spkrOuts == TONE_OUT_SPKR2)
@@ -223,18 +228,58 @@ void HwSpkrMgr()
 	}		
 }
 
-unsigned char HwButtonsPressed()
+char HwDahPressed()
 {
-	unsigned char retVal = 0;
-	
-	if (!P3_2)
-		retVal |= PWR_BUTTON ;
-	if (!P2_2)
-		retVal |= HF_BUTTON ;	
-	if (!P2_3)
-		retVal |= TONE_BUTTON ;
-	if (!P2_4)
-		retVal |= VOL_BUTTON ;	
+	if (!P2_5)
+		return 1;
 		
-	return retVal ;
+	return 0;
+}
+
+char HwDitPressed()
+{
+	if (!P2_6)
+		return 1;
+		
+	return 0;
+}
+
+char HwPB0Pressed()
+{
+	if (!P3_2)
+		return 1;
+		
+	return 0;
+}
+
+char HwPB1Pressed()
+{
+	if (!P2_2)
+		return 1;
+		
+	return 0;
+}
+
+char HwPB2Pressed()
+{
+	if (!P2_3)
+		return 1;
+		
+	return 0;
+}
+
+char HwPB3Pressed()
+{
+	if (!P2_4)
+		return 1;
+		
+	return 0;
+}
+
+void HwLatchKeys()
+{		
+	if (!P2_5)
+	  SBIT(signalDahLatch);
+	if (!P2_6)
+	  SBIT(signalDitLatch);		
 }

@@ -25,34 +25,22 @@ typedef enum
 	
 } TONE_OUT_ENUM ;
 
-typedef enum
-{
-	NO_BUTTON   = 0x00 ,
-	PWR_BUTTON  = 0x01,
-	HF_BUTTON   = 0x02,
-	TONE_BUTTON = 0x04,
-	VOL_BUTTON  = 0x08,
-	
-} BUTTON_ENUM ;
-
-typedef enum
-{
-	DIT_PRESSED  = 0x01,
-	DAH_PRESSED  = 0x02,
-	BOTH_PRESSED = 0x03,
-	
-} KEYS_PRESSED_ENUM ;
-
 void HwInit();
 void HwGlobalIntEnable();
 void HwGlobalIntDisable();
-void HwStartToneTimer(unsigned short timerValue);
-void HwStopToneTimer();
+void HwSideToneOn(unsigned short timerValue);
+void HwSideToneOff();
 void HwRestartUnitTimer(unsigned short timerValue);
 void HwSetHfLed(unsigned char on);
 void HwSetUvLed(LED_COLOR_ENUM ledMode);
 void HwKeyerOut(unsigned char keyerOn);
-unsigned char HwKeysPressed();
-unsigned char HwButtonsPressed();
+void HwLatchKeys();
+char HwPB0Pressed();
+char HwPB1Pressed();
+char HwPB2Pressed();
+char HwPB3Pressed();
+char HwDitPressed();
+char HwDahPressed();
+void SetSpeakerVolume(char pVol);
 void HwSpkrMgr();
 
