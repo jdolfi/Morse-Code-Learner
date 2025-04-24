@@ -1,8 +1,8 @@
 SRC := src
 OBJ := obj
 CC := sdcc
-CCFLAGS := -c -mmcs51 --model-large --opt-code-size
-LDFLAGS := -mmcs51 --model-large --stack-size 128 --xram-size 1024 --code-size 16384
+CCFLAGS := -c -mmcs51 --model-large --opt-code-speed
+LDFLAGS := -mmcs51 --model-large --stack-size 128 --iram-size 256 --xram-size 768 --code-size 16384
 
 SOURCES := $(wildcard $(SRC)/*.c)
 OBJECTS := $(patsubst $(SRC)/%.c, $(OBJ)/%.rel, $(SOURCES))
