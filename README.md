@@ -33,6 +33,8 @@ SPKR - Speaker volume 1,2
 
 EAR - Ear volume 1,2,3
 
+RPY - Replay macro.  Lowest setting (0) dont replay. Then 2 second intervals between 2 and 20
+
 In operating mode, when idle, the leds indicate the output mode.  No leds means out mode off.
 While keying the HF led will code in red in HF mode, green otherwise.  The UV led will be solid red while PTT active.
 
