@@ -10,6 +10,7 @@
 #include "EEProm.h"
 #include "MacroRecord.h"
 #include "PlayTask.h"
+#include "ButtonTask.h"
 
 static OP_STATE_ENUM opState = MODE_STATE_STARTUP ;
 
@@ -22,6 +23,15 @@ unsigned char SignalCheck(unsigned char* theSignal)
 	}	
 	
 	return 0;
+}
+
+void MinimalSpeakerVolume()
+{
+	char minVolume = TONE_OUT_SPKR1;
+	if (nvSettings[NV_SPKR_VOL] > minVolume)
+		minVolume = nvSettings[NV_SPKR_VOL];
+		
+	SetSpeakerVolume(minVolume);
 }
 
 void ModeTaskEnableSettings()
@@ -69,7 +79,6 @@ unsigned char adjustSetting(unsigned char settingId)
 	
 void ModeTask()
 {
-	
 	static unsigned char toggleRecord = 0;
 	
 	switch(opState)
@@ -112,7 +121,7 @@ void ModeTask()
 			if (SignalCheck(&signalPB0Long))
 			{
 				opState = MODE_STATE_WPM_MSG ;
-				SetSpeakerVolume(TONE_OUT_SPKR1);
+				MinimalSpeakerVolume();
 			}
 				
 			else if (SignalCheck(&signalPB1Short))
@@ -122,7 +131,7 @@ void ModeTask()
 			}
 			else if (SignalCheck(&signalPB1Long))
 			{
-				SetSpeakerVolume(TONE_OUT_SPKR1);
+				MinimalSpeakerVolume();
 				ModeTaskEnableSettings();
 				MacroRecordStart();
 				opState = MODE_STATE_MACRO_STORE1 ;
@@ -135,7 +144,7 @@ void ModeTask()
 			}
 			else if (SignalCheck(&signalPB2Long))
 			{
-				SetSpeakerVolume(TONE_OUT_SPKR1);
+				MinimalSpeakerVolume();
 				ModeTaskEnableSettings();
 				MacroRecordStart();
 				opState = MODE_STATE_MACRO_STORE2 ;
@@ -148,7 +157,7 @@ void ModeTask()
 			}
 			else if (SignalCheck(&signalPB3Long))
 			{
-				SetSpeakerVolume(TONE_OUT_SPKR1);
+				MinimalSpeakerVolume();
 				ModeTaskEnableSettings();
 				MacroRecordStart();
 				opState = MODE_STATE_MACRO_STORE3 ;
@@ -232,7 +241,10 @@ void ModeTask()
 		
 		case MODE_STATE_TONE_MAIN:
 			if ( adjustSetting(NV_TONE) )
+			{
+				KeyTaskEnable();			
 				opState = MODE_STATE_TONE_MAIN_WAIT;
+			}
 
 			if (SignalCheck(&signalPB0Short))
 				opState = MODE_STATE_KEY_MSG ;
@@ -404,7 +416,10 @@ void ModeTask()
 		
 		case MODE_STATE_SPKR_MAIN:
 			if ( adjustSetting(NV_SPKR_VOL) )
+			{
+				SetSpeakerVolume(nvSettings[NV_SPKR_VOL]);
 				opState = MODE_STATE_SPKR_MAIN_WAIT;
+			}
 
 			if (SignalCheck(&signalPB0Short))
 				opState = MODE_STATE_EAR_MSG ;

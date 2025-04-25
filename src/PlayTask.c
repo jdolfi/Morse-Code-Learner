@@ -26,8 +26,6 @@ void PlayTaskEnable()
 {	  		
 	if (playState != PLAY_STATE_DISABLE)
 		return;
-	
-	ButtonsDisable();
 		
 	playUnitTimerValue = calcUnitTimerValue(nvSettings[NV_WPM]);
 	playToneTimerValue = calcToneTimerValue(nvSettings[NV_TONE]);
@@ -64,7 +62,6 @@ void PlayTask()
 				{	
 					macroAbortCount=0;
 					OutOff();
-					ButtonsEnable();
 					playState = PLAY_STATE_DISABLE ;					
 				}
 			}		
@@ -133,8 +130,10 @@ void PlayTask()
 			hfLed(LED_GREEN, LED_OFF);
 
 			if (!nvSettings[NV_REPLAY])
-				playState = PLAY_STATE_IDLE ;
-			
+			{
+				OutOff();
+				playState = PLAY_STATE_DISABLE ;
+			}
 			else if (signalReplayTick)
 			{
 				CBIT(signalReplayTick);

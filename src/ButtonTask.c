@@ -11,45 +11,8 @@ static BUTTON_STATE_ENUM but2State = BUT_STATE_IDLE;
 static unsigned char but3Count = 0;
 static BUTTON_STATE_ENUM but3State = BUT_STATE_IDLE;
 
-static unsigned char buttonsEnabled=1;
-
-void ButtonsEnable()
-{
-	but0State=BUT_STATE_IDLE;
-	but0Count=0;
-	CBIT(signalPB0Short);
-	CBIT(signalPB0Long);
-	
-	but1State=BUT_STATE_IDLE;
-	but1Count=0;
-	CBIT(signalPB1Short);
-	CBIT(signalPB1Long);
-	
-	but2State=BUT_STATE_IDLE;
-	but2Count=0;
-	CBIT(signalPB2Short);
-	CBIT(signalPB2Long);
-	
-	but3State=BUT_STATE_IDLE;
-	but3Count=0;
-	CBIT(signalPB3Short);
-	CBIT(signalPB3Long);
-	
-	buttonsEnabled=1;
-}
-
-void ButtonsDisable()
-{
-	buttonsEnabled=0;
-}
-
 void Button0Task()
-{	
-	if (!buttonsEnabled)
-	{
-		return ;		
-	}
-	
+{		
 	switch (but0State)
 	{
 		case BUT_STATE_IDLE:
