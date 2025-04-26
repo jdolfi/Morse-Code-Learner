@@ -4,8 +4,8 @@
 #include "Signals.h"
 #include "LedTask.h"
 
-__near unsigned char outTimeoutCount=0;
-__near static OUT_MODE_ENUM outMode ;
+static unsigned char outTimeoutCount=0;
+static OUT_MODE_ENUM outMode ;
 
 void OutTimer()
 {
